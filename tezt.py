@@ -38,7 +38,7 @@ class Render(object):
         self.windowHeight = 0
         self.viewPortWidth = 0
         self.viewPortHeight = 0
-        self.color = RED
+        self.color = WHITE
         self.xPort = 0
         self.yPort = 0
         self.framebuffer = []
@@ -47,8 +47,12 @@ class Render(object):
         self.y0 = 0
         self.y1 = 0
     #Basicamente __init__ ^ hace esta funcion, asi que cree esta funcion por estética
+    
     def glInit(self):
         return "Bitmap creado... \n"
+
+    def point(self, x, y):
+        self.framebuffer[y][x] = WHITE
 
     def glCreateWindow(self, width, height):
         self.windowWidth = width
@@ -66,7 +70,7 @@ class Render(object):
 
     def glClear(self):
         self.framebuffer = [
-            [BLUE for x in range(self.windowWidth)]
+            [BLACK for x in range(self.windowWidth)]
             for y in range(self.windowHeight)
         ]
 
@@ -81,22 +85,33 @@ class Render(object):
         # https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glViewport.xhtml
         newX = round((x + 1)*(self.viewPortWidth/2)) + self.xPort
         newY = round((y + 1)*(self.viewPortHeight/2)) + self.yPort
-        self.framebuffer[newY][newX] = self.color
+        #funcion point para optimar
+        self.point(newX,newY)
 
     def glColor(self, r=0, g=0, b=0):
         #self.framebuffer[self.yPort][self.xPort] = color(r,g,b)
+        #Cambiar los valores de 0-255 a 0-1
         self.color = color(r,g,b)
-    
-    def glLine(self,x0,y0,x1,y1):
-        dy = abs(y1 - y0)
-        dx = abs(x1 - x0)
-        steep = dy > dx
+    def glLine(self, placement, ycardinal = True):
+        #variables condicionales y misma formual del vertex
+        position = ((placement + 1) * (self.viewPortHeight/2) + self.yPort) if ycardinal else ((placement+1) * (self.viewPortWidth/2) + self.xPort)
+        return round(position)
+
+    def Line(self,x0,y0,x1,y1):
+        self.x0 = self.glLine(x0, False)
+        self.x1 = self.glLine(x1, False)
+        self.y0 = self.glLine(y0)
+        self.y1 = self.glLine(y1)
+        #dy = abs(y1 - y0)
+        #dx = abs(x1 - x0)
+        #dy > dx
+        steep = abs(self.y1 - self.y0) > abs(self.x1 - self.x0)
         if steep:
-            x0 , y0 = y0, x0
-            x1, y1 = y1, x1
-        if x0 > x1:
-            x0, x1 = x1, x0
-            y0, y1 = y1, y0
+            self.x0 , self.y0 = self.y0, self.x0
+            self.x1, self.y1 = self.y1, self.x1
+        if self.x0 > self.x1:
+            self.x0, self.x1 = self.x1, self.x0
+            self.y0, self.y1 = self.y1, self.y0
         
         dy = abs(y1 - y0)
         dx = abs(x1 - x0)
@@ -104,22 +119,22 @@ class Render(object):
         offset  = 0
         threshold = dx 
        
-        self.y = y0
+        self.y = self.y0
         # y = y1 - m * (x1 - x)
-        for self.x in range(x0, x1):
-      
-            if steep:
-                 #render.point(round(x), round(y))
-                self.glVertex(round(self.y), round(self.x))
-
-            else:
-                #render.point(x), round(y))
-                self.glVertex(round(self.x), round(self.y))
-                offset += 2 * dy
-                # y = y1 + round(offset)
+        for self.x in range(self.x0, self.x1):
             if offset >= threshold:
                 self.y += 1 if self.y0 < self.y1 else -1
                 threshold += 2 * dx
+            if steep:
+                 #render.point(round(x), round(y))
+                self.point(self.y, self.x)
+
+            else:
+                #render.point(x), round(y))
+                self.point(self.x,self.y)
+                
+            offset += dy * 2
+            
 
     def glFinish(self, filename):
         f = open(filename, 'bw')
@@ -154,8 +169,7 @@ class Render(object):
 
 
 
-#def point(self, x, y):
-#   self.framebuffer[y][x] = color(255, 0, 0)
+
 
 #Colores como constantes
 GREEN = color(0, 255, 0)
@@ -166,12 +180,4 @@ WHITE = color(255, 255, 255)
 
 #bitmap es el producto final, debo hacer un  menu completo 
 # 128, 64
-bitmap = Render()
-print(bitmap.glInit())
-bitmap.glCreateWindow(128,64)
-bitmap.glViewPort(10,10,64,32)
-bitmap.glClear()
-bitmap.glVertex(1,1)
-bitmap.glVertex(-1,-1)
-bitmap.glVertex(0,0)
-bitmap.glFinish('out.bmp')
+
