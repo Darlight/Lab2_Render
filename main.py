@@ -9,22 +9,24 @@ Mario Perdomo
 main.py
 Proposito: Crear una linea dentro del framebuffer con las posibles optimizaciones
 """
-from tezt import Render,char, word, dword, color, WHITE, BLACK, RED, BLUE, GREEN, struct
+from tezt import Render
 
 
 bitmap = Render()
 print(bitmap.glInit())
-bitmap.glCreateWindow(500,500)
-bitmap.glViewPort(10,10,400,320)
-bitmap.glClear()
+bitmap.glCreateWindow() 
+
+
+
 #bitmap.Line(0,0,1,1)
 #bitmap.Line(-1,-1,1,1)
 #bitmap.Line(-1,0,0,1)
 #bitmap.Line(1,0,0,1)
 #bitmap.Line(1,0,-1,0)
 #bitmap.Line(-1,0,1,0)
-bitmap.Line(-1,0,0,1)
+bitmap.Line(0,0,0,1)
+
+
+
 
 bitmap.glFinish('out.bmp')
-#bitmap.glLine(0,0,100,100)
-
